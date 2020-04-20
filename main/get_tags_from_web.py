@@ -759,7 +759,10 @@ def main():
                     if fileType == ".mp3":
                         photoType = photo[photo.rfind(".") + 1:]
                         print("its .mp3")
-                        audio = ID3(root + "\\" + name)
+                        try:
+                            audio = ID3(root + "\\" + name)
+                        except ID3NoHeaderError:
+                            tags = ID3()
                         if (photo != ''):
                             audio['APIC'] = APIC(
                                 encoding=3,
@@ -785,7 +788,7 @@ def main():
                         uslt_output = USLT(encoding=3, lang=u'eng', desc=u'desc', text=lyrics)
                         audio["USLT::'eng'"] = uslt_output
                         # print("USLT::'eng'= "+str(uslt_output))
-                        audio.save()
+                        audio.save(root + "\\" + name)
 
 
 if __name__ == "__main__":
