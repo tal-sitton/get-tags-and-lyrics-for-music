@@ -4,18 +4,15 @@ import os
 import re
 import tkinter
 from tkinter.filedialog import askdirectory
-from tkinter.ttk import Button
 from urllib.request import urlopen
 
 import mutagen
 from mutagen import id3
-from mutagen.id3 import _id3v1, USLT, ID3, TRCK, APIC, ID3NoHeaderError, TPE1, TALB, TIT2, SYLT, TORY, TYER, TPE2, TCON
+from mutagen.id3 import USLT, ID3, TRCK, APIC, ID3NoHeaderError, TPE1, TALB, TIT2, SYLT, TORY, TYER, TPE2, TCON
 from mutagen.flac import FLAC, Picture
 from mutagen.mp3 import MP3, EasyMP3
-from mutagen.easyid3 import EasyID3
 import requests
 from bs4 import BeautifulSoup
-from tinytag import TinyTag
 
 HEADERS_GET = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36',
@@ -47,6 +44,7 @@ GOOGLE_GENRE2_TAG_ATTRS = {"class": "FLP8od"}
 GOOGLE_GENRE3_TAG_ATTRS = {"class": "Z0LcW"}
 WIKI_ALBUM_ATTRS = {"title": "Album"}
 
+
 # WIKI_TABLE_ATTRS = {"class": "tlheader"}
 
 def is_number(n):
@@ -76,7 +74,6 @@ def searchPhoto(url):
             return "https://music.uberchord.com/assets/images/png/placeholder-song.png"
     else:
         return "https://music.uberchord.com/assets/images/png/placeholder-song.png"
-
 
 
 def searchInWiki(title, albums, artists):
@@ -128,22 +125,26 @@ def searchInWiki(title, albums, artists):
                                 found = True
                                 break
         if not found:
-            done=False
+            done = False
             newtags = [tag.text for tag in soup.find_all(attrs=WIKI_SEARCH_RESULT_DESCRIPTION_ATTRS)]
             print(str(newtags))
             try:
-                if items_hrefs[2].__contains__("album") and not items_hrefs[0].__contains__("album") and not items_hrefs[1].__contains__("album") and str(newtags[2]).lower().__contains__(tempArtist.lower()):
+                if items_hrefs[2].__contains__("album") and not items_hrefs[0].__contains__("album") and not \
+                items_hrefs[1].__contains__("album") and str(newtags[2]).lower().__contains__(tempArtist.lower()):
                     print("4.1 found the song by {} in: {}".format(tempArtist, items_hrefs[2]))
                     trueURL.append(items_hrefs[2])
-                    done=True
+                    done = True
             except IndexError:
                 print("there wa no other option")
             try:
-                if not done and items_hrefs[0].lower().__contains__("band") and str(newtags[1]).lower().__contains__(tempArtist.lower()) or (items_hrefs[1].lower().__contains__("album") and not items_hrefs[0].lower().__contains__("album")):
+                if not done and items_hrefs[0].lower().__contains__("band") and str(newtags[1]).lower().__contains__(
+                        tempArtist.lower()) or (
+                        items_hrefs[1].lower().__contains__("album") and not items_hrefs[0].lower().__contains__(
+                        "album")):
                     print(str(newtags[1]).lower().__contains__(tempArtist))
                     print("4.5 found the song by {} in: {}".format(tempArtist, items_hrefs[1]))
                     trueURL.append(items_hrefs[1])
-                    done=True
+                    done = True
             except IndexError:
                 print("there wa no other option")
 
@@ -151,7 +152,7 @@ def searchInWiki(title, albums, artists):
                 if not done and str(newtags[0]).lower().__contains__(tempArtist.lower()):
                     print("5 found the song by {} in: {}".format(tempArtist, items_hrefs[0]))
                     trueURL.append(items_hrefs[0])
-                    done=True
+                    done = True
             except IndexError:
                 print("there is no option- no wiki pages found")
                 trueURL.append(False)
@@ -160,28 +161,30 @@ def searchInWiki(title, albums, artists):
         i += 1
     return trueURL
 
-def searchWikiForAlbum(title,artist):
-    url=searchInWiki(title,[title],[artist])
-    url=url[0]
-    if(url):
+
+def searchWikiForAlbum(title, artist):
+    url = searchInWiki(title, [title], [artist])
+    url = url[0]
+    if (url):
         res = requests.get(url, headers=HEADERS_GET).text
         soup = BeautifulSoup(res, 'html.parser')
         tags = [tag for tag in soup.find_all(attrs=WIKI_ALBUM_ATTRS)]
         if tags:
-            album=url[url.rfind('/')+1:]
-            album=album.replace(artist,'')
-            album=album.replace('album', '')
-            album=album.replace('(','').replace(')','')
-            album=album.replace("_"," ")
-            album=album.replace("%3F","?")
-            album=album.replace("%27","`")
-            album=album.strip()
+            album = url[url.rfind('/') + 1:]
+            album = album.replace(artist, '')
+            album = album.replace('album', '')
+            album = album.replace('(', '').replace(')', '')
+            album = album.replace("_", " ")
+            album = album.replace("%3F", "?")
+            album = album.replace("%27", "`")
+            album = album.strip()
             print(album)
             return album
         else:
             return False
     else:
         return False
+
 
 def searchForLength(trueUrl, title, artists):
     lengths = []
@@ -273,8 +276,8 @@ def searchForAnAlbum(title, artist):
         temp_albums2 = [tag.text for tag in soup.find_all(attrs=GOOGLE_ALBUM_TAG_ATTRS)]
         if temp_albums2:
             return temp_albums2[0]
-        temp_albums3=searchWikiForAlbum(title,artist)
-        if(temp_albums3):
+        temp_albums3 = searchWikiForAlbum(title, artist)
+        if (temp_albums3):
             return temp_albums3[0]
         print("didnt find album to {title} by {artist}".format(title=title, artist=artist))
         return title
@@ -294,11 +297,11 @@ def searchForArtist(title):
     with open(r"C:\Users\talsi\Desktop\test.html", 'w', encoding='utf-8') as f:
         f.write(res)
     # try:
-    text=res.split('Other recordings of this song')
-    res=text[0]
+    text = res.split('Other recordings of this song')
+    res = text[0]
     soup = BeautifulSoup(res, 'html.parser')
     songs = [tag.text for tag in soup.find_all(attrs=GOOGLE_SONG_TAG_ATTRS)]
-    songs=songs[:round(len(songs)/2)]
+    songs = songs[:round(len(songs) / 2)]
     artists = [tag.text for tag in soup.find_all(attrs=GOOGLE_ARTISTS_TAG_ATTRS)][:len(songs)]
     i = 0
     # print("list length= "+ str(len(songs)))
@@ -336,15 +339,15 @@ def searchForArtist(title):
 def searchForPlaceInAlbumInWiki(title, url):
     found = False
     print(url)
-    if(url):
+    if (url):
         res = requests.get(url, headers=HEADERS_GET).text
         soup = BeautifulSoup(res, 'html.parser')
         tags = [tag.text for tag in soup.find_all(attrs=WIKI_TABLE_ATTRS1)]
-        print("we serch for place to the song: "+title.lower())
+        print("we serch for place to the song: " + title.lower())
         for i in tags:
-            print("searchong for place... i= "+str(i.lower()))
+            print("searchong for place... i= " + str(i.lower()))
             if i.lower().__contains__(title.lower()):
-                    # and (i.lower().__contains__("acoustic") == title.lower().__contains__("acoustic")):
+                # and (i.lower().__contains__("acoustic") == title.lower().__contains__("acoustic")):
                 print("found i= " + str(i))
                 j = i.find(".")
                 newi = i[:j]
@@ -357,7 +360,7 @@ def searchForPlaceInAlbumInWiki(title, url):
             for i in tags:
                 # print(i)
                 if i.lower().__contains__(title.lower()):
-                        # and (i.lower().__contains__("acoustic") == title.lower().__contains__("acoustic")):
+                    # and (i.lower().__contains__("acoustic") == title.lower().__contains__("acoustic")):
                     print("found i= " + str(i))
                     j = i.find(".")
                     newi = i[:j]
@@ -449,101 +452,80 @@ def searchForLyrics(artist, title):
     # print(string)
     return string
 
-def albumFromWiki(title, album, artist,url):
+
+def albumFromWiki(title, album, artist, url):
     print("now searching for album via the url")
-    length=searchForLength([url],title,[artist])
-    length=length[0]
+    length = searchForLength([url], title, [artist])
+    length = length[0]
     if length:
-        newUrl=url.replace("_"," ").replace("%3F","?").replace("%27","'")
+        newUrl = url.replace("_", " ").replace("%3F", "?").replace("%27", "'")
         if not newUrl.lower().__contains__(album.lower()) and length:
             print("the album was wrong, fixing it now")
-            album=newUrl[newUrl.rfind('/')+1:]
-            album=album.replace(artist,'')
+            album = newUrl[newUrl.rfind('/') + 1:]
+            album = album.replace(artist, '')
             if album.lower().__contains__("edition") or album.lower().__contains__("delux"):
-                album=album.replace('(','').replace(')','')
-            album=album.replace('album', '')
-            album=album.strip()
+                album = album.replace('(', '').replace(')', '')
+            album = album.replace('album', '')
+            album = album.strip()
         print(album)
         return album
     return album
+
 
 def searchReleaseYear(album, artist):
     query = "{album} {artist}".format(album=album, artist=artist).replace(" ", "+").replace("&", "and")
     search = "https://google.com/search?hl={lang}&q={query}+release+date".format(lang='en', query=query)
     res = requests.get(search, headers=HEADERS_GET).text
-    soup=BeautifulSoup(res, 'html.parser')
-    date=[tag.text for tag in soup.find_all(attrs=GOOGLE_DATE_ATTRS)]
+    soup = BeautifulSoup(res, 'html.parser')
+    date = [tag.text for tag in soup.find_all(attrs=GOOGLE_DATE_ATTRS)]
     if not date:
         return ""
-    date=str(date[0])
-    date=date[date.find(',')+1:]
-    date=date.strip()
+    date = str(date[0])
+    date = date[date.find(',') + 1:]
+    date = date.strip()
     print(date)
     return date
+
 
 def searchForGenres(album, artist):
     query = "{album} {artist}".format(album=album, artist=artist).replace(" ", "+").replace("&", "and")
     search = "https://google.com/search?hl={lang}&q={query}+genre".format(lang='en', query=query)
     print(search)
     res = requests.get(search, headers=HEADERS_GET).text
-    text=res.split('Songs')
-    res=text[0]
-    soup=BeautifulSoup(res, 'html.parser')
-    genres=[tag.text for tag in soup.find_all(attrs=GOOGLE_GENRE_TAG_ATTRS)]
-    print(genres)
-    newGenre=[]
-    if genres:
-        for i in genres:
-            i=str(i).split('/')
-            newGenre.append(i[0])
-            try:
-                newGenre.append(i[1])
+    text = res.split('Songs')
+    res = text[0]
+    soup = BeautifulSoup(res, 'html.parser')
+    for i in range(3):
+        if(i==0):
+            genres = [tag.text for tag in soup.find_all(attrs=GOOGLE_GENRE_TAG_ATTRS)]
+        elif(i==1):
+            genres = [tag.text for tag in soup.find_all(attrs=GOOGLE_GENRE2_TAG_ATTRS)]
+        elif(i==2):
+            genres = [tag.text for tag in soup.find_all(attrs=GOOGLE_GENRE3_TAG_ATTRS)]
+        print(genres)
+        newGenre = []
+        if genres:
+            for i in genres:
+                i = str(i).split('/')
+                newGenre.append(i[0])
                 try:
-                    newGenre.append(i[2])
+                    newGenre.append(i[1])
+                    try:
+                        newGenre.append(i[2])
+                    except IndexError:
+                        continue
                 except IndexError:
                     continue
-            except IndexError:
-                continue
-        return newGenre
-    genres=[tag.text for tag in soup.find_all(attrs=GOOGLE_GENRE2_TAG_ATTRS)]
-    print(genres)
-    if genres:
-        for i in genres:
-            i=str(i).split('/')
-            newGenre.append(i[0])
-            try:
-                newGenre.append(i[1])
-                try:
-                    newGenre.append(i[2])
-                except IndexError:
-                    continue
-            except IndexError:
-                continue
-        return newGenre
-    genres=[tag.text for tag in soup.find_all(attrs=    GOOGLE_GENRE3_TAG_ATTRS)]
-    print(genres)
-    if genres:
-        for i in genres:
-            i=str(i).split('/')
-            newGenre.append(i[0])
-            try:
-                newGenre.append(i[1])
-                try:
-                    newGenre.append(i[2])
-                except IndexError:
-                    continue
-            except IndexError:
-                continue
-        return newGenre
-    return ""
+            return newGenre
+
 
 def main():
     open(r'C:\Users\talsi\Desktop\log for mp3 tagging program.log', 'w').close()
     LOG_FILENAME = r'C:\Users\talsi\Desktop\log for mp3 tagging program.log'
-    logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
+    logging.basicConfig(filename=LOG_FILENAME, level=logging.DEBUG)
     logging.getLogger("urllib3").setLevel(logging.WARNING)
-    logger=logging.getLogger("THIS IS IMPORTANT!")
-    printing=logging.getLogger("")
+    logger = logging.getLogger("THIS IS IMPORTANT!")
+    printing = logging.getLogger("")
     printing.debug('this is the start of the program')
     printing.debug("")
     print("start")
@@ -551,78 +533,82 @@ def main():
     root = tkinter.Tk()
     root.withdraw()
     root.update()
-    folder = askdirectory(title = "choose the dir u want get tags to",initialdir = r"C:\Users\User\Desktop", mustexist=True )
+    folder = askdirectory(title="choose the dir u want get tags to", initialdir=r"C:\Users\User\Desktop",
+                          mustexist=True)
     root.destroy()
-    printing.debug("the dir is "+ folder)
+    printing.debug("the dir is " + folder)
     printing.debug("")
 
     for root, dirs, files, in os.walk(folder):
         for name in files:
             if name.endswith((".mp3", ".flac")):
                 fileType = os.path.splitext(name)[1]
-                if(fileType==".mp3"):
-                    audio=MP3(root + "\\" + name)
-                    ezAudio=EasyMP3(root + "\\" + name)
+                if (fileType == ".mp3"):
+                    audio = MP3(root + "\\" + name)
+                    ezAudio = EasyMP3(root + "\\" + name)
                     # print("length using mutagen MP3: "+str(audio.info.length))
                     # print("title using mutagen ezMP3: "+ezAudio["title"][0])
-                if(fileType==".flac"):
-                    audio=FLAC(root + "\\" + name)
-                    ezAudio=audio
+                if (fileType == ".flac"):
+                    audio = FLAC(root + "\\" + name)
+                    ezAudio = audio
                     # print("length using mutagen FLAC: "+str(audio.info.length))
                     # print("title using mutagen FLAC: "+audio["title"][0])
                 print(root)
                 tracks.append(name)
                 print(audio.info.length)
                 try:
-                    print("found title in file: "+ezAudio["title"][0])
+                    print("found title in file: " + ezAudio["title"][0])
                     title = ezAudio["title"][0]
                 except KeyError:
-                    print("didnt found title in file, title of file= "+os.path.splitext(name)[0])
+                    print("didnt found title in file, title of file= " + os.path.splitext(name)[0])
                     title = os.path.splitext(name)[0]
-                title=str(title)
-                title=title.strip()
+                title = str(title)
+                title = title.strip()
                 print(title)
                 print(fileType)
-                print("audio.info.length= "+str(audio.info.length))
+                print("audio.info.length= " + str(audio.info.length))
                 duration = round(audio.info.length)
-                print("duration= "+ str(duration))
+                print("duration= " + str(duration))
                 formattedDuration = str(datetime.timedelta(seconds=duration))
                 formattedDuration = formattedDuration[-5:]
-                print("formattedDuration= "+str(formattedDuration))
+                print("formattedDuration= " + str(formattedDuration))
 
                 artists = searchForArtist(title)
-                print("len(artists)= "+str(len(artists)))
+                print("len(artists)= " + str(len(artists)))
                 if len(artists) >= 2:
                     print("len(artists) >= 2")
-                    temp_title=title
-                    if("delux" in title or "edition" in title or "edit" in title or "version" in title):
-                        temp_title=re.sub(r'\([^()]*\)', '', title)
+                    temp_title = title
+                    if ("delux" in title or "edition" in title or "edit" in title or "version" in title):
+                        temp_title = re.sub(r'\([^()]*\)', '', title)
                     albums = searchForAlbum(temp_title, artists)
-                    wikialbums=[]
+                    wikialbums = []
                     for i in albums:
-                        if "(" in str(i) and ("edition" in str(i) or "delux" in str(i) or "edit" in str(i) or "version" in str(i)):
+                        if "(" in str(i) and (
+                                "edition" in str(i) or "delux" in str(i) or "edit" in str(i) or "version" in str(i)):
                             wikialbums.append(re.sub(r'\([^()]*\)', '', i))
                         else:
                             wikialbums.append(i)
                     wikipidiaUrls = searchInWiki(temp_title, wikialbums, artists)
-                    print("wiki urls len= "+str(len(wikipidiaUrls)))
-                    print("artists len= "+str(len(artists)))
-                    print("albums len= "+str(len(albums)))
+                    print("wiki urls len= " + str(len(wikipidiaUrls)))
+                    print("artists len= " + str(len(artists)))
+                    print("albums len= " + str(len(albums)))
 
                     foundedLengths = searchForLength(wikipidiaUrls, temp_title, artists)
 
-                    i=0
-                    needToDoLengthAgian=False
-                    while i<len(artists):
-                        if(foundedLengths[i]==False):
-                            albums[i]=searchWikiForAlbum(temp_title,artists[i])
-                            needToDoLengthAgian=True
-                        i+=1
+                    i = 0
+                    needToDoLengthAgian = False
+                    while i < len(artists):
+                        if (foundedLengths[i] == False):
+                            albums[i] = searchWikiForAlbum(temp_title, artists[i])
+                            needToDoLengthAgian = True
+                        i += 1
 
-                    if(needToDoLengthAgian):
-                        wikialbums=[]
+                    if (needToDoLengthAgian):
+                        wikialbums = []
                         for i in albums:
-                            if str(temp_album).__contains__("(") and (str(temp_album).lower().__contains__("edition") or str(temp_album).lower().__contains__("delux")):
+                            if str(temp_album).__contains__("(") and (
+                                    str(temp_album).lower().__contains__("edition") or str(
+                                    temp_album).lower().__contains__("delux")):
                                 wikialbums.append(re.sub(r'\([^()]*\)', '', i))
                             else:
                                 wikialbums.append(i)
@@ -652,7 +638,7 @@ def main():
                     try:
                         rightOne = eliminationMatch[0]
                     except IndexError:
-                        logger.error("didnt found the right artist to the song "+title)
+                        logger.error("didnt found the right artist to the song " + title)
                         logging.debug("")
                         continue
                     rightOneSecs = int(rightOne[-2:])
@@ -684,62 +670,66 @@ def main():
                         else:
                             rightArtist = searchForAnArtist(title)
                             print(rightArtist)
-                            if(not rightArtist):
-                                logger.error("didnt found the right atrist using the 'searchForAnArtist()' function with the title "+title)
+                            if (not rightArtist):
+                                logger.error(
+                                    "didnt found the right atrist using the 'searchForAnArtist()' function with the title " + title)
                                 logging.debug("")
                                 continue
                         print("artists<2 and found the right one:" + rightArtist)
-                        temp_title=title
+                        temp_title = title
                         if "delux" in title.lower() or "edition" in title.lower() or "edit" in title.lower() or "version" in title.lower():
-                            temp_title=re.sub(r'\([^()]*\)', '', title)
-                        print("temp_title= "+temp_title)
+                            temp_title = re.sub(r'\([^()]*\)', '', title)
+                        print("temp_title= " + temp_title)
                         rightAlbum = searchForAnAlbum(temp_title, rightArtist)
-                        print("right album= "+rightAlbum)
+                        print("right album= " + rightAlbum)
 
-                        wikipidiaUrls=searchInWiki(temp_title,[rightAlbum],[rightArtist])
-                        length=searchForLength(wikipidiaUrls,temp_title,[rightArtist])
-                        length=length[0]
+                        wikipidiaUrls = searchInWiki(temp_title, [rightAlbum], [rightArtist])
+                        length = searchForLength(wikipidiaUrls, temp_title, [rightArtist])
+                        length = length[0]
 
-                        i=0
-                        needToDoLengthAgian=False
-                        temp_album=False
-                        foundedLengths=False
+                        i = 0
+                        needToDoLengthAgian = False
+                        temp_album = False
+                        foundedLengths = False
 
-                        if(length==False):
-                            temp_album=searchWikiForAlbum(temp_title,rightArtist)
-                            needToDoLengthAgian=True
+                        if (length == False):
+                            temp_album = searchWikiForAlbum(temp_title, rightArtist)
+                            needToDoLengthAgian = True
 
-                        if(needToDoLengthAgian and temp_album):
-                            if str(temp_album).__contains__("(") and (str(temp_album).lower().__contains__("edition") or str(temp_album).lower().__contains__("delux")):
-                                wikialbums=re.sub(r'\([^()]*\)', '', temp_album)
+                        if (needToDoLengthAgian and temp_album):
+                            if str(temp_album).__contains__("(") and (
+                                    str(temp_album).lower().__contains__("edition") or str(
+                                    temp_album).lower().__contains__("delux")):
+                                wikialbums = re.sub(r'\([^()]*\)', '', temp_album)
                             else:
-                                wikialbums=temp_album
+                                wikialbums = temp_album
 
                             wikipidiaUrls = searchInWiki(temp_title, [wikialbums], [rightArtist])
-                            print("wikiUrls= "+str(wikipidiaUrls))
+                            print("wikiUrls= " + str(wikipidiaUrls))
                             foundedLengths = searchForLength(wikipidiaUrls, temp_title, [rightArtist])
 
                         if foundedLengths:
-                            rightAlbum=temp_album
-                            rightOne=foundedLengths[0]
+                            rightAlbum = temp_album
+                            rightOne = foundedLengths[0]
                         else:
                             rightOne = formattedDuration
 
-                syncedLyrics = searchForSyncedLyrics(rightArtist, title) #dosent work with the any music player i came across with
+                syncedLyrics = searchForSyncedLyrics(rightArtist,
+                                                     title)  # dosent work with the any music player i came across with
                 syncedLyrics
                 if str(rightAlbum).lower().__contains__("edition") or str(rightAlbum).lower().__contains__("delux"):
                     url = searchInWiki(temp_title, [re.sub(r'\([^()]*\)', '', rightAlbum)], [rightArtist])
                 else:
-                    url=searchInWiki(temp_title, [rightAlbum], [rightArtist])
+                    url = searchInWiki(temp_title, [rightAlbum], [rightArtist])
                 print("url= " + str(url))
                 url = url[0]
                 print("url[0]= " + url)
                 lyrics = searchForLyrics(rightArtist, title)
                 number = searchForPlaceInAlbumInWiki(temp_title, url)
                 photo = searchPhoto(url)
-                rightAlbum=albumFromWiki(temp_title,rightAlbum,rightArtist,url)
-                yearOfRelease= searchReleaseYear(rightAlbum,rightArtist)
-                genres=searchForGenres(rightAlbum,rightArtist)
+                rightAlbum = albumFromWiki(temp_title, rightAlbum, rightArtist, url)
+                yearOfRelease = searchReleaseYear(rightAlbum, rightArtist)
+                genres = searchForGenres(rightAlbum, rightArtist)
                 print("artist is {art}, album is {album}, length is {length}".format(art=rightArtist, album=rightAlbum,
                                                                                      length=rightOne))
                 if fileType == ".flac":
@@ -760,36 +750,36 @@ def main():
                     # audio["SYLT"] = syncedLyrics  # SYLT = synchronized syncedLyrics transcription #USLT = unsynchronized syncedLyrics transcription
                     # audio["USLT"] = lyrics
                     audio["Lyrics"] = lyrics
-                    audio["DATE"] =str(yearOfRelease)
+                    audio["DATE"] = str(yearOfRelease)
                     audio["TRACKNUMBER"] = number
-                    audio["ALBUMARTIST"]= rightArtist
-                    audio["GENRE"]=genres
+                    audio["ALBUMARTIST"] = rightArtist
+                    audio["GENRE"] = genres
                     audio.save()
                 else:
                     if fileType == ".mp3":
-                        photoType=photo[photo.rfind(".")+1:]
+                        photoType = photo[photo.rfind(".") + 1:]
                         print("its .mp3")
                         audio = ID3(root + "\\" + name)
-                        if(photo != ''):
+                        if (photo != ''):
                             audio['APIC'] = APIC(
                                 encoding=3,
-                                mime='image/jpeg',
+                                mime='image/' + str(photoType),
                                 type=3, desc=u'Cover',
                                 data=urlopen(photo).read()
                             )
-                        trackNumber=str(number)+'/'+'30'
+                        trackNumber = str(number) + '/' + '30'
                         audio['TPE1'] = TPE1(encoding=3, text=rightArtist)
-                        print("TPE1= "+str(TPE1(encoding=3, text=rightArtist)))
+                        print("TPE1= " + str(TPE1(encoding=3, text=rightArtist)))
                         audio['TIT2'] = TIT2(encoding=3, text=title)
                         audio['TPE2'] = TPE2(encoding=3, text=rightArtist)
-                        print("TIT2= "+str(TIT2(encoding=3, text=title)))
+                        print("TIT2= " + str(TIT2(encoding=3, text=title)))
                         audio['TRCK'] = TRCK(encoding=3, text=trackNumber)
-                        print("TRCK= "+str(TRCK(encoding=3, text=trackNumber)))
+                        print("TRCK= " + str(TRCK(encoding=3, text=trackNumber)))
                         audio['TALB'] = TALB(encoding=3, text=rightAlbum)
-                        print("TALB= "+str(TALB(encoding=3, text=rightAlbum)))
-                        audio['TORY'] = TORY(encoding=3,text=str(yearOfRelease))
-                        audio['TYER'] = TYER(encoding=3,text=str(yearOfRelease))
-                        audio['TCON'] = TCON (encoding=3, text=genres)
+                        print("TALB= " + str(TALB(encoding=3, text=rightAlbum)))
+                        audio['TORY'] = TORY(encoding=3, text=str(yearOfRelease))
+                        audio['TYER'] = TYER(encoding=3, text=str(yearOfRelease))
+                        audio['TCON'] = TCON(encoding=3, text=genres)
                         # audio['SYLT'] = SYLT(encoding=3,lang='eng',desc=u'desc',text=syncedLyrics)
                         # print("SYLT= "+str(SYLT(encoding=3,lang='eng',desc=u'desc',text=syncedLyrics)))
                         uslt_output = USLT(encoding=3, lang=u'eng', desc=u'desc', text=lyrics)
